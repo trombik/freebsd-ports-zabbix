@@ -25,31 +25,33 @@ ZABBIX_BUILD?=	server
 
 USES+=		pkgconfig iconv
 
-FLAVORS+=	mysql pgsql oracle
+FLAVORS+=	mysql pgsql
 FLAVOR?=	${FLAVORS:[1]}
 
 .if ${ZABBIX_BUILD} == "proxy"
-FLAVORS=	mysql pgsql oracle sqlite
+FLAVORS=	mysql pgsql sqlite
 .endif
 
 .if ${ZABBIX_BUILD} == "proxy"
 mysql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
 pgsql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
-oracle_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
 sqlite_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
 .else
 mysql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
 pgsql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
-oracle_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
-.endif
+.endif # .if ${ZABBIX_BUILD} == "proxy"
 
 .for F in ${FLAVORS}
 .if ${F} != ${FLAVOR}
 CONFLICTS_INSTALL+= zabbix5[0-9]-${ZABBIX_BUILD}-${F}
-.endif
+.endif # .if ${F} != ${FLAVOR}
 .endfor
 
+.if ${FLAVOR} == "pgsql"
+CONFIGURE_ARGS+=	--with-postgresql
+.else
 CONFIGURE_ARGS+=	--with-${FLAVOR}
+.endif # .if ${FLAVOR} == "pgsql"
 
 .if ${FLAVOR} == "mysql"
 USES+=	compiler:c11 mysql
