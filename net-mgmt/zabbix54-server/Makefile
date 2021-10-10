@@ -29,7 +29,7 @@ FLAVORS+=	mysql pgsql
 FLAVOR?=	${FLAVORS:[1]}
 
 .if ${ZABBIX_BUILD} == "proxy"
-FLAVORS=	mysql pgsql sqlite
+FLAVORS=	mysql pgsql sqlite3
 .endif
 
 .if ${ZABBIX_BUILD} == "proxy"
@@ -61,7 +61,7 @@ USES+=	compiler:c11 mysql
 USES+=	pgsql
 .endif
 
-.if ${FLAVOR} == "sqlite"
+.if ${FLAVOR} == "sqlite3"
 USES+=	sqlite
 .endif
 
