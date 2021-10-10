@@ -61,6 +61,10 @@ USES+=	compiler:c11 mysql
 USES+=	pgsql
 .endif
 
+.if ${FLAVOR} == "sqlite"
+USES+=	sqlite
+.endif
+
 CONFIGURE_ARGS+=	--with-libevent=${LOCALBASE} --cache-file=${WRKSRC}/config.cache
 LIB_DEPENDS+=	libevent.so:devel/libevent
 USE_RC_SUBR=	zabbix_${ZABBIX_BUILD}
