@@ -2,33 +2,69 @@ PORTNAME=	zabbix54
 DISTVERSION=	5.4.5
 CATEGORIES=	net-mgmt
 MASTER_SITES=	https://cdn.zabbix.com/zabbix/sources/stable/${DISTVERSION:R}/
-PKGNAMESUFFIX?=	-server
+PKGNAMESUFFIX=	-${ZABBIX_BUILD}
 DISTNAME=	zabbix-${DISTVERSION}
 
 MAINTAINER=	otis@FreeBSD.org
-COMMENT=	Enterprise-class open source distributed monitoring (${PKGNAMESUFFIX:S/^-//})
+COMMENT=	Enterprise-class open source distributed monitoring (${ZABBIX_BUILD})
 
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/COPYING
 
 LIB_DEPENDS=	libpcre.so:devel/pcre
 
-CONFLICTS_INSTALL=	zabbix[0-46-9][0-9]${PKGNAMESUFFIX} \
-		zabbix5[0-35-9]${PKGNAMESUFFIX} \
-		zabbix[0-9]${PKGNAMESUFFIX}
-
-ZABBIX_BUILD=	${PKGNAMESUFFIX:S/^-//}
+CONFLICTS_INSTALL=	zabbix[0-9][0-9]-${ZABBIX_BUILD} \
+		zabbix[0-9]-${ZABBIX_BUILD}
+USES=	#
+FLAVORS=	#
+FLAVOR=	#
+ZABBIX_BUILD?=	server
 
 .if ${ZABBIX_BUILD} != "frontend" # frontend only needs the version/distribution settings
 .if ${ZABBIX_BUILD} != "agent"
+
+USES+=		pkgconfig iconv
+
+FLAVORS+=	mysql pgsql oracle
+FLAVOR?=	${FLAVORS:[1]}
+
+.if ${ZABBIX_BUILD} == "proxy"
+FLAVORS=	mysql pgsql oracle sqlite
+.endif
+
+.if ${ZABBIX_BUILD} == "proxy"
+mysql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+pgsql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+oracle_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+sqlite_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+.else
+mysql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+pgsql_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+oracle_PKGNAMESUFFIX=	-${ZABBIX_BUILD}-${FLAVOR}
+.endif
+
+.for F in ${FLAVORS}
+.if ${F} != ${FLAVOR}
+CONFLICTS_INSTALL+= zabbix5[0-9]-${ZABBIX_BUILD}-${F}
+.endif
+.endfor
+
+CONFIGURE_ARGS+=	--with-${FLAVOR}
+
+.if ${FLAVOR} == "mysql"
+USES+=	compiler:c11 mysql
+.endif
+
+.if ${FLAVOR} == "pgsql"
+USES+=	pgsql
+.endif
+
 CONFIGURE_ARGS+=	--with-libevent=${LOCALBASE} --cache-file=${WRKSRC}/config.cache
 LIB_DEPENDS+=	libevent.so:devel/libevent
 USE_RC_SUBR=	zabbix_${ZABBIX_BUILD}
 .else
 USE_RC_SUBR=	zabbix_${ZABBIX_BUILD}d
 .endif
-
-USES=		pkgconfig iconv
 
 USERS=		zabbix
 GROUPS=		zabbix
@@ -68,7 +104,7 @@ CONFIGURE_ARGS+=	--with-net-snmp
 
 OPTIONS_DEFINE=		IPV6 FPING CURL LDAP IPMI SSH NMAP LIBXML2 UNIXODBC
 
-OPTIONS_DEFAULT=	FPING CURL UNIXODBC MYSQL OPENSSL
+OPTIONS_DEFAULT=	FPING CURL UNIXODBC OPENSSL
 OPTIONS_SUB=		yes
 
 FPING_DESC=		Build/install fping for ping checks
@@ -79,20 +115,8 @@ SSH_DESC=		Support for SSH-based checks
 UNIXODBC_DESC=		Support for database checks via ODBC
 LIBXML2_DESC=		Support for libxml2 (required by monitoring VMware)
 
-OPTIONS_SINGLE=		DB SSL
-OPTIONS_SINGLE_DB?=	MYSQL PGSQL ORACLE
+OPTIONS_SINGLE=		SSL
 OPTIONS_SINGLE_SSL=	OPENSSL GNUTLS
-
-MYSQL_CONFIGURE_WITH=	mysql
-MYSQL_USES+=		compiler:c11 mysql
-
-PGSQL_CONFIGURE_WITH=	postgresql
-PGSQL_USES+=		pgsql
-
-SQLITE_CONFIGURE_WITH=	sqlite3
-SQLITE_USES+=		sqlite:3
-
-ORACLE_CONFIGURE_WITH=	oracle
 
 LDAP_CONFIGURE_WITH=	ldap
 LDAP_USE=		OPENLDAP=yes

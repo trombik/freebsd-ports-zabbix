@@ -1,11 +1,12 @@
 PORTNAME=	zabbix54
 CATEGORIES=	net-mgmt
-PKGNAMESUFFIX=	-agent
 
 MASTERDIR=	${.CURDIR}/../${PORTNAME}-server
 PLIST=		${PKGDIR}/pkg-plist.agent
 
 OPTIONS_DEFINE=		CURL IPV6 MODBUS
 OPTIONS_DEFAULT=	CURL OPENSSL
+
+ZABBIX_BUILD=	agent
 
 .include "${MASTERDIR}/Makefile"

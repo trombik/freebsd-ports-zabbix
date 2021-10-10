@@ -1,10 +1,10 @@
 PORTNAME=	zabbix54
 PORTREVISION=	0
 CATEGORIES=	net-mgmt
-PKGNAMESUFFIX=	-frontend
 
 MASTERDIR=	${.CURDIR}/../${PORTNAME}-server
 
+ZABBIX_BUILD=	frontend
 NO_BUILD=	yes
 NO_ARCH=	yes
 PATCHDIR=
