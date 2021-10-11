@@ -1,5 +1,4 @@
 PORTNAME=	zabbix54
-PORTREVISION=	0
 CATEGORIES=	net-mgmt
 
 MASTERDIR=	${.CURDIR}/../${PORTNAME}-server
